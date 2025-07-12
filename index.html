@@ -1,0 +1,2412 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GrowTap - Plataforma de Gestión NFC</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        }
+        
+        .success-card {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .warning-card {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+        
+        .danger-card {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 1100;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background-color: #10b981;
+        }
+        
+        .notification.error {
+            background-color: #ef4444;
+        }
+        
+        .notification.warning {
+            background-color: #f59e0b;
+        }
+        
+        .sidebar {
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 20px 0;
+        }
+        
+        .table-container {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .badge-success {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        
+        .badge-warning {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        .badge-danger {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .badge-info {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #059669);
+            transition: width 0.3s ease;
+        }
+        
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .dropdown.active .dropdown-content {
+            display: block;
+        }
+        
+        .dropdown-content a {
+            color: #374151;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            transition: background-color 0.2s;
+        }
+        
+        .dropdown-content a:hover {
+            background-color: #f9fafb;
+        }
+        
+        .tab {
+            display: none;
+        }
+        
+        .tab.active {
+            display: block;
+        }
+        
+        .tab-button {
+            padding: 10px 20px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-button.active {
+            border-bottom-color: #4f46e5;
+            color: #4f46e5;
+            font-weight: 600;
+        }
+        
+        .tab-button:hover {
+            background-color: #f3f4f6;
+        }
+        
+        .file-upload {
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .file-upload:hover {
+            border-color: #4f46e5;
+            background-color: #f8fafc;
+        }
+        
+        .file-upload.dragover {
+            border-color: #4f46e5;
+            background-color: #eef2ff;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Notification Container -->
+    <div id="notification" class="notification"></div>
+    
+    <!-- Login Section -->
+    <div id="loginSection" class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8">
+            <div class="text-center">
+                <div class="mx-auto h-16 w-16 bg-indigo-600 rounded-full flex items-center justify-center">
+                    <i class="fas fa-qrcode text-white text-2xl"></i>
+                </div>
+                <h2 class="mt-6 text-3xl font-extrabold text-gray-900">GrowTap NFC</h2>
+                <p class="mt-2 text-sm text-gray-600">Plataforma de Gestión de Placas NFC</p>
+            </div>
+            
+            <form id="loginForm" class="mt-8 space-y-6">
+                <div class="rounded-md shadow-sm -space-y-px">
+                    <div>
+                        <label for="email" class="sr-only">Email</label>
+                        <input id="email" name="email" type="email" required 
+                               class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" 
+                               placeholder="Email">
+                    </div>
+                    <div>
+                        <label for="password" class="sr-only">Password</label>
+                        <input id="password" name="password" type="password" required 
+                               class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" 
+                               placeholder="Contraseña">
+                    </div>
+                </div>
+                
+                <div>
+                    <button type="submit" 
+                            class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <span id="loginSpinner" class="loading mr-2" style="display: none;"></span>
+                        Iniciar Sesión
+                    </button>
+                </div>
+                
+                <div class="text-center">
+                    <p class="text-sm text-gray-600">Usuarios de prueba:</p>
+                    <div class="mt-2 space-y-1">
+                        <p class="text-xs text-gray-500">Admin: admin@growtap.es / admin123</p>
+                        <p class="text-xs text-gray-500">Cliente: cliente@demo.com / cliente123</p>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Main Application -->
+    <div id="mainApp" class="hidden">
+        <!-- Mobile Menu Button -->
+        <div class="md:hidden bg-white shadow-sm p-4">
+            <button id="mobileMenuBtn" class="text-gray-600 hover:text-gray-900">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+        </div>
+        
+        <!-- Sidebar -->
+        <div id="sidebar" class="sidebar fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg">
+            <div class="flex items-center justify-between h-16 px-4 bg-indigo-600 text-white">
+                <div class="flex items-center">
+                    <i class="fas fa-qrcode text-xl mr-3"></i>
+                    <h1 class="text-lg font-semibold">GrowTap NFC</h1>
+                </div>
+                <button id="closeSidebarBtn" class="md:hidden text-white hover:text-gray-300">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <nav class="mt-6">
+                <div class="px-4 mb-4">
+                    <div class="flex items-center">
+                        <div class="h-8 w-8 bg-indigo-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-indigo-600 text-sm"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-700" id="userEmail">admin@growtap.es</p>
+                            <p class="text-xs text-gray-500" id="userRole">Administrador</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="adminMenu" class="space-y-1">
+                    <a href="#" class="nav-item flex items-center px-4 py-2 text-gray-700 hover:bg-indigo-50 hover:text-indigo-600" data-section="dashboard">
+                        <i class="fas fa-chart-line mr-3"></i>
+                        Dashboard
+                    </a>
+                    <a href="#" class="nav-item flex items-center px-4 py-2 text-gray-700 hover:bg-indigo-50 hover:text-indigo-600" data-section="clients">
+                        <i class="fas fa-users mr-3"></i>
+                        Clientes
+                    </a>
+                    <a href="#" class="nav-item flex items-center px-4 py-2 text-gray-700 hover:bg-indigo-50 hover:text-indigo-600" data-section="products">
+                        <i class="fas fa-qrcode mr-3"></i>
+                        Productos
+                    </a>
+                    <a href="#" class="nav-item flex items-center px-4 py-2 text-gray-700 hover:bg-indigo-50 hover:text-indigo-600" data-section="analytics">
+                        <i class="fas fa-chart-bar mr-3"></i>
+                        Estadísticas
+                    </a>
+                </div>
+                
+                <div id="clientMenu" class="space-y-1 hidden">
+                    <a href="#" class="nav-item flex items-center px-4 py-2 text-gray-700 hover:bg-indigo-50 hover:text-indigo-600" data-section="client-dashboard">
+                        <i class="fas fa-tachometer-alt mr-3"></i>
+                        Mi Dashboard
+                    </a>
+                    <a href="#" class="nav-item flex items-center px-4 py-2 text-gray-700 hover:bg-indigo-50 hover:text-indigo-600" data-section="client-products">
+                        <i class="fas fa-qrcode mr-3"></i>
+                        Mis Productos
+                    </a>
+                    <a href="#" class="nav-item flex items-center px-4 py-2 text-gray-700 hover:bg-indigo-50 hover:text-indigo-600" data-section="client-analytics">
+                        <i class="fas fa-chart-line mr-3"></i>
+                        Mis Estadísticas
+                    </a>
+                </div>
+                
+                <div class="absolute bottom-0 w-full p-4">
+                    <button id="logoutBtn" class="w-full flex items-center justify-center px-4 py-2 text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-md">
+                        <i class="fas fa-sign-out-alt mr-3"></i>
+                        Cerrar Sesión
+                    </button>
+                </div>
+            </nav>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="md:ml-64 min-h-screen bg-gray-50">
+            <!-- Dashboard Section -->
+            <div id="dashboard" class="section p-6">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-gray-900">Dashboard</h2>
+                    <p class="mt-1 text-sm text-gray-600">Resumen general de la plataforma</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="stat-card rounded-lg p-6 text-white card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm opacity-75">Total Clientes</p>
+                                <p class="text-2xl font-bold" id="totalClients">0</p>
+                            </div>
+                            <i class="fas fa-users text-3xl opacity-75"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="success-card rounded-lg p-6 text-white card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm opacity-75">Total Productos</p>
+                                <p class="text-2xl font-bold" id="totalProducts">0</p>
+                            </div>
+                            <i class="fas fa-qrcode text-3xl opacity-75"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="warning-card rounded-lg p-6 text-white card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm opacity-75">Productos Activos</p>
+                                <p class="text-2xl font-bold" id="activeProducts">0</p>
+                            </div>
+                            <i class="fas fa-check-circle text-3xl opacity-75"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="danger-card rounded-lg p-6 text-white card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm opacity-75">Escaneos Totales</p>
+                                <p class="text-2xl font-bold" id="totalScans">0</p>
+                            </div>
+                            <i class="fas fa-eye text-3xl opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-4">Escaneos por Día</h3>
+                        <div class="chart-container">
+                            <canvas id="scansChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-4">Top Clientes</h3>
+                        <div class="space-y-3" id="topClients"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Clients Section -->
+            <div id="clients" class="section p-6 hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">Gestión de Clientes</h2>
+                        <p class="mt-1 text-sm text-gray-600">Administra todos los clientes del sistema</p>
+                    </div>
+                    <button id="addClientBtn" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 flex items-center">
+                        <i class="fas fa-plus mr-2"></i>
+                        Nuevo Cliente
+                    </button>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow">
+                    <div class="p-4 border-b">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                            <div class="flex items-center space-x-4">
+                                <div class="relative">
+                                    <input type="text" id="clientSearch" placeholder="Buscar clientes..." 
+                                           class="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                </div>
+                                <select id="clientStatusFilter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <option value="">Todos los estados</option>
+                                    <option value="active">Activos</option>
+                                    <option value="inactive">Inactivos</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Productos</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="clientsTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Clients will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Products Section -->
+            <div id="products" class="section p-6 hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">Gestión de Productos</h2>
+                        <p class="mt-1 text-sm text-gray-600">Administra todas las placas NFC del sistema</p>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button id="importProductsBtn" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 flex items-center">
+                            <i class="fas fa-file-import mr-2"></i>
+                            Importar CSV
+                        </button>
+                        <button id="addProductBtn" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 flex items-center">
+                            <i class="fas fa-plus mr-2"></i>
+                            Nuevo Producto
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow">
+                    <div class="p-4 border-b">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                            <div class="flex items-center space-x-4">
+                                <div class="relative">
+                                    <input type="text" id="productSearch" placeholder="Buscar productos..." 
+                                           class="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                </div>
+                                <select id="productStatusFilter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <option value="">Todos los estados</option>
+                                    <option value="active">Activos</option>
+                                    <option value="inactive">Inactivos</option>
+                                </select>
+                                <select id="productClientFilter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <option value="">Todos los clientes</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">URL</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Escaneos</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productsTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Products will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Analytics Section -->
+            <div id="analytics" class="section p-6 hidden">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">Estadísticas Avanzadas</h2>
+                    <p class="mt-1 text-sm text-gray-600">Análisis detallado de rendimiento</p>
+                </div>
+                
+                <div class="mb-6">
+                    <div class="flex items-center space-x-4">
+                        <select id="analyticsTimeFilter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="7">Últimos 7 días</option>
+                            <option value="30">Últimos 30 días</option>
+                            <option value="90">Últimos 90 días</option>
+                            <option value="365">Último año</option>
+                        </select>
+                        <select id="analyticsClientFilter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="">Todos los clientes</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-4">Tendencia de Escaneos</h3>
+                        <div class="chart-container">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-4">Distribución por Cliente</h3>
+                        <div class="chart-container">
+                            <canvas id="clientDistributionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold mb-4">Productos Más Populares</h3>
+                    <div class="table-container">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Escaneos</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tendencia</th>
+                                </tr>
+                            </thead>
+                            <tbody id="topProductsTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Top products will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Client Dashboard -->
+            <div id="client-dashboard" class="section p-6 hidden">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-gray-900">Mi Dashboard</h2>
+                    <p class="mt-1 text-sm text-gray-600">Resumen de tus productos NFC</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="stat-card rounded-lg p-6 text-white card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm opacity-75">Mis Productos</p>
+                                <p class="text-2xl font-bold" id="myProducts">0</p>
+                            </div>
+                            <i class="fas fa-qrcode text-3xl opacity-75"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="success-card rounded-lg p-6 text-white card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm opacity-75">Productos Activos</p>
+                                <p class="text-2xl font-bold" id="myActiveProducts">0</p>
+                            </div>
+                            <i class="fas fa-check-circle text-3xl opacity-75"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="warning-card rounded-lg p-6 text-white card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm opacity-75">Escaneos Totales</p>
+                                <p class="text-2xl font-bold" id="myTotalScans">0</p>
+                            </div>
+                            <i class="fas fa-eye text-3xl opacity-75"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="danger-card rounded-lg p-6 text-white card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm opacity-75">Escaneos Hoy</p>
+                                <p class="text-2xl font-bold" id="myScansToday">0</p>
+                            </div>
+                            <i class="fas fa-calendar-day text-3xl opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-4">Mis Escaneos por Día</h3>
+                        <div class="chart-container">
+                            <canvas id="myScansChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-4">Mis Productos Más Populares</h3>
+                        <div class="space-y-3" id="myTopProducts"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Client Products -->
+            <div id="client-products" class="section p-6 hidden">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">Mis Productos</h2>
+                    <p class="mt-1 text-sm text-gray-600">Gestiona las URLs de tus placas NFC</p>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow">
+                    <div class="p-4 border-b">
+                        <div class="flex items-center space-x-4">
+                            <div class="relative">
+                                <input type="text" id="myProductSearch" placeholder="Buscar mis productos..." 
+                                       class="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            </div>
+                            <select id="myProductStatusFilter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="">Todos los estados</option>
+                                <option value="active">Activos</option>
+                                <option value="inactive">Inactivos</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">URL de Redirección</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Escaneos</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="myProductsTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Client products will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Client Analytics -->
+            <div id="client-analytics" class="section p-6 hidden">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">Mis Estadísticas</h2>
+                    <p class="mt-1 text-sm text-gray-600">Análisis detallado de tus productos</p>
+                </div>
+                
+                <div class="mb-6">
+                    <div class="flex items-center space-x-4">
+                        <select id="myAnalyticsTimeFilter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="7">Últimos 7 días</option>
+                            <option value="30">Últimos 30 días</option>
+                            <option value="90">Últimos 90 días</option>
+                            <option value="365">Último año</option>
+                        </select>
+                        <select id="myAnalyticsProductFilter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="">Todos mis productos</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-4">Evolución de Escaneos</h3>
+                        <div class="chart-container">
+                            <canvas id="myTrendChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-4">Distribución por Producto</h3>
+                        <div class="chart-container">
+                            <canvas id="myProductDistributionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-4">Horas de Mayor Actividad</h3>
+                        <div class="chart-container">
+                            <canvas id="hourlyChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-4">Resumen por Producto</h3>
+                        <div class="space-y-4" id="productSummary"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modals -->
+    <!-- Client Modal -->
+    <div id="clientModal" class="modal">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div class="flex justify-between items-center p-6 border-b">
+                <h3 id="clientModalTitle" class="text-lg font-semibold">Nuevo Cliente</h3>
+                <button class="text-gray-400 hover:text-gray-600" onclick="closeModal('clientModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="clientForm" class="p-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
+                        <input type="text" id="clientName" required 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <input type="email" id="clientEmail" required 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Contraseña</label>
+                        <input type="password" id="clientPassword" required 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Estado</label>
+                        <select id="clientStatus" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="active">Activo</option>
+                            <option value="inactive">Inactivo</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" onclick="closeModal('clientModal')" 
+                            class="px-4 py-2 text-gray-600 hover:text-gray-800">
+                        Cancelar
+                    </button>
+                    <button type="submit" 
+                            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                        Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Product Modal -->
+    <div id="productModal" class="modal">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div class="flex justify-between items-center p-6 border-b">
+                <h3 id="productModalTitle" class="text-lg font-semibold">Nuevo Producto</h3>
+                <button class="text-gray-400 hover:text-gray-600" onclick="closeModal('productModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="productForm" class="p-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Código (5 caracteres)</label>
+                        <input type="text" id="productCode" required maxlength="5" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">URL por Defecto</label>
+                        <input type="url" id="productUrl" required 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Cliente</label>
+                        <select id="productClient" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="">Sin asignar</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Estado</label>
+                        <select id="productStatus" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="active">Activo</option>
+                            <option value="inactive">Inactivo</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" onclick="closeModal('productModal')" 
+                            class="px-4 py-2 text-gray-600 hover:text-gray-800">
+                        Cancelar
+                    </button>
+                    <button type="submit" 
+                            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                        Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Edit URL Modal -->
+    <div id="editUrlModal" class="modal">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div class="flex justify-between items-center p-6 border-b">
+                <h3 class="text-lg font-semibold">Editar URL</h3>
+                <button class="text-gray-400 hover:text-gray-600" onclick="closeModal('editUrlModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="editUrlForm" class="p-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Código</label>
+                        <input type="text" id="editUrlCode" readonly 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nueva URL</label>
+                        <input type="url" id="editUrlValue" required 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    
+                    <div class="text-sm text-gray-600">
+                        <p>La URL pública será: <strong>https://app.growtap.es/qr/<span id="editUrlPreview"></span></strong></p>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" onclick="closeModal('editUrlModal')" 
+                            class="px-4 py-2 text-gray-600 hover:text-gray-800">
+                        Cancelar
+                    </button>
+                    <button type="submit" 
+                            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                        Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Import CSV Modal -->
+    <div id="importModal" class="modal">
+        <div class="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4">
+            <div class="flex justify-between items-center p-6 border-b">
+                <h3 class="text-lg font-semibold">Importar Productos CSV</h3>
+                <button class="text-gray-400 hover:text-gray-600" onclick="closeModal('importModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="p-6">
+                <div class="mb-4">
+                    <p class="text-sm text-gray-600 mb-2">Formato esperado del CSV:</p>
+                    <div class="bg-gray-50 p-3 rounded-md text-sm font-mono">
+                        codigo,url_defecto,email_cliente<br>
+                        H8G7D,https://growtap.es/default,cliente@demo.com<br>
+                        Z3L1P,https://growtap.es/default,
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <button id="downloadTemplate" class="text-indigo-600 hover:text-indigo-800 text-sm">
+                        <i class="fas fa-download mr-1"></i>
+                        Descargar plantilla CSV
+                    </button>
+                </div>
+                
+                <div class="file-upload" id="fileUpload">
+                    <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
+                    <p class="text-gray-600 mb-2">Arrastra tu archivo CSV aquí o haz clic para seleccionar</p>
+                    <input type="file" id="csvFile" accept=".csv" class="hidden">
+                    <button type="button" onclick="document.getElementById('csvFile').click()" 
+                            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                        Seleccionar Archivo
+                    </button>
+                </div>
+                
+                <div id="importPreview" class="mt-4 hidden">
+                    <h4 class="font-semibold mb-2">Vista previa:</h4>
+                    <div class="max-h-40 overflow-y-auto border border-gray-200 rounded-md p-2 bg-gray-50">
+                        <pre id="importPreviewContent" class="text-xs"></pre>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" onclick="closeModal('importModal')" 
+                            class="px-4 py-2 text-gray-600 hover:text-gray-800">
+                        Cancelar
+                    </button>
+                    <button id="importBtn" disabled
+                            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50">
+                        Importar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Redirect Page -->
+    <div id="redirectPage" class="hidden min-h-screen flex items-center justify-center bg-gray-50">
+        <div class="text-center">
+            <div class="loading mx-auto mb-4"></div>
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">Redirigiendo...</h2>
+            <p class="text-gray-600">Serás redirigido en un momento</p>
+        </div>
+    </div>
+    
+    <!-- Error Page -->
+    <div id="errorPage" class="hidden min-h-screen flex items-center justify-center bg-gray-50">
+        <div class="text-center">
+            <div class="mx-auto h-24 w-24 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                <i class="fas fa-exclamation-triangle text-red-600 text-3xl"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">Placa no encontrada</h2>
+            <p class="text-gray-600 mb-4">El código escaneado no existe o ha sido desactivado</p>
+            <button onclick="window.location.href='https://growtap.es'" 
+                    class="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                Ir a GrowTap
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Data Storage
+        let currentUser = null;
+        let currentSection = 'dashboard';
+        let clients = [];
+        let products = [];
+        let scans = [];
+        let charts = {};
+        
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeData();
+            setupEventListeners();
+            
+            // Check if redirecting
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            if (code) {
+                handleRedirect(code);
+            }
+        });
+        
+        function initializeData() {
+            // Initialize with sample data
+            clients = [
+                {
+                    id: 1,
+                    name: 'Panadería Navarro',
+                    email: 'cliente@demo.com',
+                    password: 'cliente123',
+                    status: 'active',
+                    created: '2024-01-15'
+                },
+                {
+                    id: 2,
+                    name: 'Restaurante El Buen Sabor',
+                    email: 'restaurante@demo.com',
+                    password: 'restaurante123',
+                    status: 'active',
+                    created: '2024-01-20'
+                }
+            ];
+            
+            products = [
+                {
+                    id: 1,
+                    code: 'H8G7D',
+                    url: 'https://panaderianavarro.com/resenas',
+                    defaultUrl: 'https://growtap.es/default',
+                    clientId: 1,
+                    status: 'active',
+                    created: '2024-01-15'
+                },
+                {
+                    id: 2,
+                    code: 'Z3L1P',
+                    url: 'https://linktr.ee/panaderianavarro',
+                    defaultUrl: 'https://growtap.es/default',
+                    clientId: 1,
+                    status: 'active',
+                    created: '2024-01-15'
+                },
+                {
+                    id: 3,
+                    code: 'W9E6Q',
+                    url: 'https://restaurante.com/menu',
+                    defaultUrl: 'https://growtap.es/default',
+                    clientId: 2,
+                    status: 'active',
+                    created: '2024-01-20'
+                }
+            ];
+            
+            // Generate sample scan data
+            scans = [];
+            const now = new Date();
+            for (let i = 0; i < 100; i++) {
+                const scanDate = new Date(now.getTime() - Math.random() * 30 * 24 * 60 * 60 * 1000);
+                scans.push({
+                    id: i + 1,
+                    productId: Math.floor(Math.random() * 3) + 1,
+                    date: scanDate.toISOString(),
+                    hour: scanDate.getHours()
+                });
+            }
+        }
+        
+        function setupEventListeners() {
+            // Login form
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            
+            // Navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showSection(this.dataset.section);
+                });
+            });
+            
+            // Mobile menu
+            document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+                document.getElementById('sidebar').classList.add('open');
+            });
+            
+            document.getElementById('closeSidebarBtn').addEventListener('click', function() {
+                document.getElementById('sidebar').classList.remove('open');
+            });
+            
+            // Logout
+            document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+            
+            // Modal buttons
+            document.getElementById('addClientBtn').addEventListener('click', function() {
+                showClientModal();
+            });
+            
+            document.getElementById('addProductBtn').addEventListener('click', function() {
+                showProductModal();
+            });
+            
+            document.getElementById('importProductsBtn').addEventListener('click', function() {
+                showImportModal();
+            });
+            
+            // Forms
+            document.getElementById('clientForm').addEventListener('submit', handleClientSubmit);
+            document.getElementById('productForm').addEventListener('submit', handleProductSubmit);
+            document.getElementById('editUrlForm').addEventListener('submit', handleEditUrlSubmit);
+            
+            // Search and filters
+            document.getElementById('clientSearch').addEventListener('input', filterClients);
+            document.getElementById('clientStatusFilter').addEventListener('change', filterClients);
+            document.getElementById('productSearch').addEventListener('input', filterProducts);
+            document.getElementById('productStatusFilter').addEventListener('change', filterProducts);
+            document.getElementById('productClientFilter').addEventListener('change', filterProducts);
+            
+            // Import CSV
+            document.getElementById('csvFile').addEventListener('change', handleCSVSelect);
+            document.getElementById('importBtn').addEventListener('click', handleImport);
+            document.getElementById('downloadTemplate').addEventListener('click', downloadTemplate);
+            
+            // File upload drag and drop
+            const fileUpload = document.getElementById('fileUpload');
+            fileUpload.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('dragover');
+            });
+            
+            fileUpload.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+            });
+            
+            fileUpload.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    document.getElementById('csvFile').files = files;
+                    handleCSVSelect();
+                }
+            });
+            
+            // Analytics filters
+            document.getElementById('analyticsTimeFilter').addEventListener('change', updateAnalytics);
+            document.getElementById('analyticsClientFilter').addEventListener('change', updateAnalytics);
+        }
+        
+        function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            // Show loading
+            document.getElementById('loginSpinner').style.display = 'inline-block';
+            
+            setTimeout(() => {
+                // Check admin credentials
+                if (email === 'admin@growtap.es' && password === 'admin123') {
+                    currentUser = { email, role: 'admin' };
+                    showMainApp();
+                } else {
+                    // Check client credentials
+                    const client = clients.find(c => c.email === email && c.password === password);
+                    if (client) {
+                        currentUser = { email, role: 'client', clientId: client.id };
+                        showMainApp();
+                    } else {
+                        showNotification('Email o contraseña incorrectos', 'error');
+                    }
+                }
+                
+                document.getElementById('loginSpinner').style.display = 'none';
+            }, 1000);
+        }
+        
+        function showMainApp() {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('mainApp').classList.remove('hidden');
+            
+            // Update UI based on user role
+            document.getElementById('userEmail').textContent = currentUser.email;
+            document.getElementById('userRole').textContent = currentUser.role === 'admin' ? 'Administrador' : 'Cliente';
+            
+            if (currentUser.role === 'admin') {
+                document.getElementById('adminMenu').classList.remove('hidden');
+                document.getElementById('clientMenu').classList.add('hidden');
+                showSection('dashboard');
+            } else {
+                document.getElementById('adminMenu').classList.add('hidden');
+                document.getElementById('clientMenu').classList.remove('hidden');
+                showSection('client-dashboard');
+            }
+            
+            updateData();
+        }
+        
+        function showSection(section) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
+            
+            // Show selected section
+            document.getElementById(section).classList.remove('hidden');
+            
+            // Update navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('bg-indigo-50', 'text-indigo-600');
+            });
+            
+            document.querySelector(`[data-section="${section}"]`).classList.add('bg-indigo-50', 'text-indigo-600');
+            
+            currentSection = section;
+            
+            // Load section-specific data
+            switch(section) {
+                case 'dashboard':
+                    updateDashboard();
+                    break;
+                case 'clients':
+                    updateClientsTable();
+                    break;
+                case 'products':
+                    updateProductsTable();
+                    break;
+                case 'analytics':
+                    updateAnalytics();
+                    break;
+                case 'client-dashboard':
+                    updateClientDashboard();
+                    break;
+                case 'client-products':
+                    updateClientProducts();
+                    break;
+                case 'client-analytics':
+                    updateClientAnalytics();
+                    break;
+            }
+        }
+        
+        function updateData() {
+            // Update dashboard stats
+            document.getElementById('totalClients').textContent = clients.length;
+            document.getElementById('totalProducts').textContent = products.length;
+            document.getElementById('activeProducts').textContent = products.filter(p => p.status === 'active').length;
+            document.getElementById('totalScans').textContent = scans.length;
+            
+            // Update filters
+            updateFilters();
+        }
+        
+        function updateFilters() {
+            const clientFilters = document.querySelectorAll('#productClientFilter, #analyticsClientFilter');
+            clientFilters.forEach(filter => {
+                filter.innerHTML = '<option value="">Todos los clientes</option>';
+                clients.forEach(client => {
+                    filter.innerHTML += `<option value="${client.id}">${client.name}</option>`;
+                });
+            });
+            
+            if (currentUser.role === 'client') {
+                const myProducts = products.filter(p => p.clientId === currentUser.clientId);
+                document.getElementById('myProducts').textContent = myProducts.length;
+                document.getElementById('myActiveProducts').textContent = myProducts.filter(p => p.status === 'active').length;
+                
+                const myScans = scans.filter(s => {
+                    const product = products.find(p => p.id === s.productId);
+                    return product && product.clientId === currentUser.clientId;
+                });
+                document.getElementById('myTotalScans').textContent = myScans.length;
+                
+                const today = new Date().toDateString();
+                const todayScans = myScans.filter(s => new Date(s.date).toDateString() === today);
+                document.getElementById('myScansToday').textContent = todayScans.length;
+            }
+        }
+        
+        function updateDashboard() {
+            // Update charts
+            updateDashboardCharts();
+            updateTopClients();
+        }
+        
+        function updateDashboardCharts() {
+            const ctx = document.getElementById('scansChart').getContext('2d');
+            
+            // Prepare data for last 7 days
+            const labels = [];
+            const data = [];
+            const now = new Date();
+            
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+                labels.push(date.toLocaleDateString());
+                
+                const dayScans = scans.filter(s => {
+                    const scanDate = new Date(s.date);
+                    return scanDate.toDateString() === date.toDateString();
+                });
+                data.push(dayScans.length);
+            }
+            
+            if (charts.scansChart) {
+                charts.scansChart.destroy();
+            }
+            
+            charts.scansChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Escaneos',
+                        data: data,
+                        borderColor: '#4f46e5',
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateTopClients() {
+            const clientStats = clients.map(client => {
+                const clientProducts = products.filter(p => p.clientId === client.id);
+                const clientScans = scans.filter(s => {
+                    const product = products.find(p => p.id === s.productId);
+                    return product && product.clientId === client.id;
+                });
+                
+                return {
+                    name: client.name,
+                    products: clientProducts.length,
+                    scans: clientScans.length
+                };
+            });
+            
+            clientStats.sort((a, b) => b.scans - a.scans);
+            
+            const topClientsHtml = clientStats.slice(0, 5).map(client => `
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                        <p class="font-medium">${client.name}</p>
+                        <p class="text-sm text-gray-600">${client.products} productos</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-semibold text-indigo-600">${client.scans}</p>
+                        <p class="text-sm text-gray-600">escaneos</p>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('topClients').innerHTML = topClientsHtml;
+        }
+        
+        function updateClientsTable() {
+            const tableBody = document.getElementById('clientsTableBody');
+            
+            const filteredClients = clients.filter(client => {
+                const search = document.getElementById('clientSearch').value.toLowerCase();
+                const statusFilter = document.getElementById('clientStatusFilter').value;
+                
+                const matchesSearch = client.name.toLowerCase().includes(search) || 
+                                    client.email.toLowerCase().includes(search);
+                const matchesStatus = !statusFilter || client.status === statusFilter;
+                
+                return matchesSearch && matchesStatus;
+            });
+            
+            const html = filteredClients.map(client => {
+                const clientProducts = products.filter(p => p.clientId === client.id);
+                const statusBadge = client.status === 'active' ? 'badge-success' : 'badge-danger';
+                
+                return `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                                    <span class="text-indigo-600 font-medium">${client.name.charAt(0)}</span>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">${client.name}</div>
+                                    <div class="text-sm text-gray-500">ID: ${client.id}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${client.email}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${clientProducts.length}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="badge ${statusBadge}">${client.status === 'active' ? 'Activo' : 'Inactivo'}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button onclick="editClient(${client.id})" class="text-indigo-600 hover:text-indigo-900 mr-3">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteClient(${client.id})" class="text-red-600 hover:text-red-900">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            tableBody.innerHTML = html;
+        }
+        
+        function updateProductsTable() {
+            const tableBody = document.getElementById('productsTableBody');
+            
+            const filteredProducts = products.filter(product => {
+                const search = document.getElementById('productSearch').value.toLowerCase();
+                const statusFilter = document.getElementById('productStatusFilter').value;
+                const clientFilter = document.getElementById('productClientFilter').value;
+                
+                const matchesSearch = product.code.toLowerCase().includes(search) || 
+                                    product.url.toLowerCase().includes(search);
+                const matchesStatus = !statusFilter || product.status === statusFilter;
+                const matchesClient = !clientFilter || product.clientId == clientFilter;
+                
+                return matchesSearch && matchesStatus && matchesClient;
+            });
+            
+            const html = filteredProducts.map(product => {
+                const client = clients.find(c => c.id === product.clientId);
+                const productScans = scans.filter(s => s.productId === product.id);
+                const statusBadge = product.status === 'active' ? 'badge-success' : 'badge-danger';
+                
+                return `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-qrcode text-green-600"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">${product.code}</div>
+                                    <div class="text-sm text-gray-500">ID: ${product.id}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 max-w-xs truncate">${product.url}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${client ? client.name : 'Sin asignar'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${productScans.length}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="badge ${statusBadge}">${product.status === 'active' ? 'Activo' : 'Inactivo'}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button onclick="editProduct(${product.id})" class="text-indigo-600 hover:text-indigo-900 mr-3">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteProduct(${product.id})" class="text-red-600 hover:text-red-900">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            tableBody.innerHTML = html;
+        }
+        
+        function updateClientProducts() {
+            const tableBody = document.getElementById('myProductsTableBody');
+            const clientProducts = products.filter(p => p.clientId === currentUser.clientId);
+            
+            const filteredProducts = clientProducts.filter(product => {
+                const search = document.getElementById('myProductSearch').value.toLowerCase();
+                const statusFilter = document.getElementById('myProductStatusFilter').value;
+                
+                const matchesSearch = product.code.toLowerCase().includes(search) || 
+                                    product.url.toLowerCase().includes(search);
+                const matchesStatus = !statusFilter || product.status === statusFilter;
+                
+                return matchesSearch && matchesStatus;
+            });
+            
+            const html = filteredProducts.map(product => {
+                const productScans = scans.filter(s => s.productId === product.id);
+                const statusBadge = product.status === 'active' ? 'badge-success' : 'badge-danger';
+                
+                return `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-qrcode text-green-600"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">${product.code}</div>
+                                    <div class="text-sm text-gray-500">https://app.growtap.es/qr/${product.code}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 max-w-xs truncate">${product.url}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${productScans.length}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="badge ${statusBadge}">${product.status === 'active' ? 'Activo' : 'Inactivo'}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button onclick="editUrl(${product.id})" class="text-indigo-600 hover:text-indigo-900 mr-3">
+                                <i class="fas fa-edit"></i> Editar URL
+                            </button>
+                            <button onclick="copyUrl('${product.code}')" class="text-green-600 hover:text-green-900">
+                                <i class="fas fa-copy"></i> Copiar
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            tableBody.innerHTML = html;
+        }
+        
+        function updateClientDashboard() {
+            updateClientStats();
+            updateClientCharts();
+            updateClientTopProducts();
+        }
+        
+        function updateClientStats() {
+            const clientProducts = products.filter(p => p.clientId === currentUser.clientId);
+            const clientScans = scans.filter(s => {
+                const product = products.find(p => p.id === s.productId);
+                return product && product.clientId === currentUser.clientId;
+            });
+            
+            document.getElementById('myProducts').textContent = clientProducts.length;
+            document.getElementById('myActiveProducts').textContent = clientProducts.filter(p => p.status === 'active').length;
+            document.getElementById('myTotalScans').textContent = clientScans.length;
+            
+            const today = new Date().toDateString();
+            const todayScans = clientScans.filter(s => new Date(s.date).toDateString() === today);
+            document.getElementById('myScansToday').textContent = todayScans.length;
+        }
+        
+        function updateClientCharts() {
+            const ctx = document.getElementById('myScansChart').getContext('2d');
+            
+            // Prepare data for last 7 days
+            const labels = [];
+            const data = [];
+            const now = new Date();
+            
+            const clientProducts = products.filter(p => p.clientId === currentUser.clientId);
+            
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+                labels.push(date.toLocaleDateString());
+                
+                const dayScans = scans.filter(s => {
+                    const scanDate = new Date(s.date);
+                    const product = products.find(p => p.id === s.productId);
+                    return scanDate.toDateString() === date.toDateString() && 
+                           product && product.clientId === currentUser.clientId;
+                });
+                data.push(dayScans.length);
+            }
+            
+            if (charts.myScansChart) {
+                charts.myScansChart.destroy();
+            }
+            
+            charts.myScansChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Mis Escaneos',
+                        data: data,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateClientTopProducts() {
+            const clientProducts = products.filter(p => p.clientId === currentUser.clientId);
+            const productStats = clientProducts.map(product => {
+                const productScans = scans.filter(s => s.productId === product.id);
+                return {
+                    code: product.code,
+                    url: product.url,
+                    scans: productScans.length
+                };
+            });
+            
+            productStats.sort((a, b) => b.scans - a.scans);
+            
+            const topProductsHtml = productStats.slice(0, 5).map(product => `
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                        <p class="font-medium">${product.code}</p>
+                        <p class="text-sm text-gray-600 truncate max-w-xs">${product.url}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-semibold text-green-600">${product.scans}</p>
+                        <p class="text-sm text-gray-600">escaneos</p>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('myTopProducts').innerHTML = topProductsHtml;
+        }
+        
+        function updateAnalytics() {
+            const timeFilter = document.getElementById('analyticsTimeFilter').value;
+            const clientFilter = document.getElementById('analyticsClientFilter').value;
+            
+            updateTrendChart(timeFilter, clientFilter);
+            updateClientDistributionChart(clientFilter);
+            updateTopProductsTable(timeFilter, clientFilter);
+        }
+        
+        function updateTrendChart(timeFilter, clientFilter) {
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            const days = parseInt(timeFilter);
+            
+            const labels = [];
+            const data = [];
+            const now = new Date();
+            
+            for (let i = days - 1; i >= 0; i--) {
+                const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+                labels.push(date.toLocaleDateString());
+                
+                let dayScans = scans.filter(s => {
+                    const scanDate = new Date(s.date);
+                    return scanDate.toDateString() === date.toDateString();
+                });
+                
+                if (clientFilter) {
+                    dayScans = dayScans.filter(s => {
+                        const product = products.find(p => p.id === s.productId);
+                        return product && product.clientId == clientFilter;
+                    });
+                }
+                
+                data.push(dayScans.length);
+            }
+            
+            if (charts.trendChart) {
+                charts.trendChart.destroy();
+            }
+            
+            charts.trendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Escaneos',
+                        data: data,
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateClientDistributionChart(clientFilter) {
+            const ctx = document.getElementById('clientDistributionChart').getContext('2d');
+            
+            let targetClients = clients;
+            if (clientFilter) {
+                targetClients = clients.filter(c => c.id == clientFilter);
+            }
+            
+            const labels = [];
+            const data = [];
+            const colors = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+            
+            targetClients.forEach((client, index) => {
+                const clientScans = scans.filter(s => {
+                    const product = products.find(p => p.id === s.productId);
+                    return product && product.clientId === client.id;
+                });
+                
+                if (clientScans.length > 0) {
+                    labels.push(client.name);
+                    data.push(clientScans.length);
+                }
+            });
+            
+            if (charts.clientDistributionChart) {
+                charts.clientDistributionChart.destroy();
+            }
+            
+            charts.clientDistributionChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors.slice(0, data.length),
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateTopProductsTable(timeFilter, clientFilter) {
+            const days = parseInt(timeFilter);
+            const cutoffDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+            
+            let filteredScans = scans.filter(s => new Date(s.date) >= cutoffDate);
+            
+            if (clientFilter) {
+                filteredScans = filteredScans.filter(s => {
+                    const product = products.find(p => p.id === s.productId);
+                    return product && product.clientId == clientFilter;
+                });
+            }
+            
+            const productStats = products.map(product => {
+                const productScans = filteredScans.filter(s => s.productId === product.id);
+                const client = clients.find(c => c.id === product.clientId);
+                
+                return {
+                    code: product.code,
+                    client: client ? client.name : 'Sin asignar',
+                    scans: productScans.length,
+                    trend: Math.random() > 0.5 ? 'up' : 'down'
+                };
+            });
+            
+            productStats.sort((a, b) => b.scans - a.scans);
+            
+            const html = productStats.slice(0, 10).map(product => `
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-qrcode text-blue-600 text-sm"></i>
+                            </div>
+                            <div class="ml-3">
+                                <div class="text-sm font-medium text-gray-900">${product.code}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${product.client}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${product.scans}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <i class="fas fa-arrow-${product.trend === 'up' ? 'up text-green-600' : 'down text-red-600'}"></i>
+                    </td>
+                </tr>
+            `).join('');
+            
+            document.getElementById('topProductsTableBody').innerHTML = html;
+        }
+        
+        function updateClientAnalytics() {
+            const timeFilter = document.getElementById('myAnalyticsTimeFilter').value;
+            const productFilter = document.getElementById('myAnalyticsProductFilter').value;
+            
+            updateMyTrendChart(timeFilter, productFilter);
+            updateMyProductDistributionChart(productFilter);
+            updateHourlyChart();
+            updateProductSummary();
+        }
+        
+        function updateMyTrendChart(timeFilter, productFilter) {
+            const ctx = document.getElementById('myTrendChart').getContext('2d');
+            const days = parseInt(timeFilter);
+            
+            const labels = [];
+            const data = [];
+            const now = new Date();
+            
+            for (let i = days - 1; i >= 0; i--) {
+                const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+                labels.push(date.toLocaleDateString());
+                
+                let dayScans = scans.filter(s => {
+                    const scanDate = new Date(s.date);
+                    const product = products.find(p => p.id === s.productId);
+                    return scanDate.toDateString() === date.toDateString() && 
+                           product && product.clientId === currentUser.clientId;
+                });
+                
+                if (productFilter) {
+                    dayScans = dayScans.filter(s => s.productId == productFilter);
+                }
+                
+                data.push(dayScans.length);
+            }
+            
+            if (charts.myTrendChart) {
+                charts.myTrendChart.destroy();
+            }
+            
+            charts.myTrendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Mis Escaneos',
+                        data: data,
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateMyProductDistributionChart(productFilter) {
+            const ctx = document.getElementById('myProductDistributionChart').getContext('2d');
+            
+            let clientProducts = products.filter(p => p.clientId === currentUser.clientId);
+            if (productFilter) {
+                clientProducts = clientProducts.filter(p => p.id == productFilter);
+            }
+            
+            const labels = [];
+            const data = [];
+            const colors = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+            
+            clientProducts.forEach((product, index) => {
+                const productScans = scans.filter(s => s.productId === product.id);
+                
+                if (productScans.length > 0) {
+                    labels.push(product.code);
+                    data.push(productScans.length);
+                }
+            });
+            
+            if (charts.myProductDistributionChart) {
+                charts.myProductDistributionChart.destroy();
+            }
+            
+            charts.myProductDistributionChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors.slice(0, data.length),
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateHourlyChart() {
+            const ctx = document.getElementById('hourlyChart').getContext('2d');
+            
+            const hourlyData = new Array(24).fill(0);
+            
+            scans.forEach(scan => {
+                const product = products.find(p => p.id === scan.productId);
+                if (product && product.clientId === currentUser.clientId) {
+                    hourlyData[scan.hour]++;
+                }
+            });
+            
+            const labels = [];
+            for (let i = 0; i < 24; i++) {
+                labels.push(i + ':00');
+            }
+            
+            if (charts.hourlyChart) {
+                charts.hourlyChart.destroy();
+            }
+            
+            charts.hourlyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Escaneos por Hora',
+                        data: hourlyData,
+                        backgroundColor: '#10b981',
+                        borderColor: '#059669',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateProductSummary() {
+            const clientProducts = products.filter(p => p.clientId === currentUser.clientId);
+            
+            const productStats = clientProducts.map(product => {
+                const productScans = scans.filter(s => s.productId === product.id);
+                const today = new Date().toDateString();
+                const todayScans = productScans.filter(s => new Date(s.date).toDateString() === today);
+                
+                return {
+                    code: product.code,
+                    url: product.url,
+                    totalScans: productScans.length,
+                    todayScans: todayScans.length,
+                    status: product.status
+                };
+            });
+            
+            const html = productStats.map(product => `
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <h4 class="font-medium text-gray-900">${product.code}</h4>
+                            <p class="text-sm text-gray-600 truncate max-w-xs">${product.url}</p>
+                        </div>
+                        <span class="badge ${product.status === 'active' ? 'badge-success' : 'badge-danger'}">
+                            ${product.status === 'active' ? 'Activo' : 'Inactivo'}
+                        </span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p class="text-gray-600">Total</p>
+                            <p class="font-semibold text-indigo-600">${product.totalScans}</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-600">Hoy</p>
+                            <p class="font-semibold text-green-600">${product.todayScans}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('productSummary').innerHTML = html;
+        }
+        
+        // Modal functions
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+        
+        function showClientModal(clientId = null) {
+            const modal = document.getElementById('clientModal');
+            const form = document.getElementById('clientForm');
+            const title = document.getElementById('clientModalTitle');
+            
+            if (clientId) {
+                const client = clients.find(c => c.id === clientId);
+                title.textContent = 'Editar Cliente';
+                document.getElementById('clientName').value = client.name;
+                document.getElementById('clientEmail').value = client.email;
+                document.getElementById('clientPassword').value = client.password;
+                document.getElementById('clientStatus').value = client.status;
+                form.dataset.clientId = clientId;
+            } else {
+                title.textContent = 'Nuevo Cliente';
+                form.reset();
+                delete form.dataset.clientId;
+            }
+            
+            showModal('clientModal');
+        }
+        
+        function showProductModal(productId = null) {
+            const modal = document.getElementById('productModal');
+            const form = document.getElementById('productForm');
+            const title = document.getElementById('productModalTitle');
+            const clientSelect = document.getElementById('productClient');
+            
+            // Populate client select
+            clientSelect.innerHTML = '<option value="">Sin asignar</option>';
+            clients.forEach(client => {
+                clientSelect.innerHTML += `<option value="${client.id}">${client.name}</option>`;
+            });
+            
+            if (productId) {
+                const product = products.find(p => p.id === productId);
+                title.textContent = 'Editar Producto';
+                document.getElementById('productCode').value = product.code;
+                document.getElementById('productUrl').value = product.url;
+                document.getElementById('productClient').value = product.clientId || '';
+                document.getElementById('productStatus').value = product.status;
+                form.dataset.productId = productId;
+            } else {
+                title.textContent = 'Nuevo Producto';
+                form.reset();
+                delete form.dataset.productId;
+            }
+            
+            showModal('productModal');
+        }
+        
+        function showImportModal() {
+            document.getElementById('importModal').classList.add('active');
+        }
+        
+        function editClient(clientId) {
+            showClientModal(clientId);
+        }
+        
+        function editProduct(productId) {
+            showProductModal(productId);
+        }
+        
+        function editUrl(productId) {
+            const product = products.find(p => p.id === productId);
+            
+            document.getElementById('editUrlCode').value = product.code;
+            document.getElementById('editUrlValue').value = product.url;
+            document.getElementById('editUrlPreview').textContent = product.code;
+            
+            const form = document.getElementById('editUrlForm');
+            form.dataset.productId = productId;
+            
+            showModal('editUrlModal');
+        }
+        
+        function deleteClient(clientId) {
+            if (confirm('¿Estás seguro de que deseas eliminar este cliente?')) {
+                clients = clients.filter(c => c.id !== clientId);
+                updateData();
+                updateClientsTable();
+                showNotification('Cliente eliminado correctamente', 'success');
+            }
+        }
+        
+        function deleteProduct(productId) {
+            if (confirm('¿Estás seguro de que deseas eliminar este producto?')) {
+                products = products.filter(p => p.id !== productId);
+                updateData();
+                updateProductsTable();
+                showNotification('Producto eliminado correctamente', 'success');
+            }
+        }
+        
+        function copyUrl(code) {
+            const url = `https://app.growtap.es/qr/${code}`;
+            navigator.clipboard.writeText(url).then(() => {
+                showNotification('URL copiada al portapapeles', 'success');
+            });
+        }
+        
+        // Form handlers
+        function handleClientSubmit(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const clientData = {
+                name: document.getElementById('clientName').value,
+                email: document.getElementById('clientEmail').value,
+                password: document.getElementById('clientPassword').value,
+                status: document.getElementById('clientStatus').value
+            };
+            
+            if (e.target.dataset.clientId) {
+                // Edit existing client
+                const clientId = parseInt(e.target.dataset.clientId);
+                const clientIndex = clients.findIndex(c => c.id === clientId);
+                clients[clientIndex] = { ...clients[clientIndex], ...clientData };
+                showNotification('Cliente actualizado correctamente', 'success');
+            } else {
+                // Add new client
+                const newClient = {
+                    id: Math.max(...clients.map(c => c.id)) + 1,
+                    ...clientData,
+                    created: new Date().toISOString()
+                };
+                clients.push(newClient);
+                showNotification('Cliente creado correctamente', 'success');
+            }
+            
+            updateData();
+            updateClientsTable();
+            closeModal('clientModal');
+        }
+        
+        function handleProductSubmit(e) {
+            e.preventDefault();
+            
+            const productData = {
+                code: document.getElementById('productCode').value,
+                url: document.getElementById('productUrl').value,
+                defaultUrl: document.getElementById('productUrl').value,
+                clientId: parseInt(document.getElementById('productClient').value) || null,
+                status: document.getElementById('productStatus').value
+            };
+            
+            if (e.target.dataset.productId) {
+                // Edit existing product
+                const productId = parseInt(e.target.dataset.productId);
+                const productIndex = products.findIndex(p => p.id === productId);
+                products[productIndex] = { ...products[productIndex], ...productData };
+                showNotification('Producto actualizado correctamente', 'success');
+            } else {
+                // Add new product
+                const newProduct = {
+                    id: Math.max(...products.map(p => p.id)) + 1,
+                    ...productData,
+                    created: new Date().toISOString()
+                };
+                products.push(newProduct);
+                showNotification('Producto creado correctamente', 'success');
+            }
+            
+            updateData();
+            updateProductsTable();
+            closeModal('productModal');
+        }
+        
+        function handleEditUrlSubmit(e) {
+            e.preventDefault();
+            
+            const productId = parseInt(e.target.dataset.productId);
+            const newUrl = document.getElementById('editUrlValue').value;
+            
+            const productIndex = products.findIndex(p => p.id === productId);
+            products[productIndex].url = newUrl;
+            
+            updateData();
+            updateClientProducts();
+            closeModal('editUrlModal');
+            showNotification('URL actualizada correctamente', 'success');
+        }
+        
+        // CSV Import functions
+        function handleCSVSelect() {
+            const file = document.getElementById('csvFile').files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const content = e.target.result;
+                    document.getElementById('importPreviewContent').textContent = content;
+                    document.getElementById('importPreview').classList.remove('hidden');
+                    document.getElementById('importBtn').disabled = false;
+                };
+                reader.readAsText(file);
+            }
+        }
+        
+        function handleImport() {
+            const file = document.getElementById('csvFile').files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                const lines = content.split('\n');
+                const headers = lines[0].split(',');
+                
+                let importCount = 0;
+                
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    
+                    const values = line.split(',');
+                    const code = values[0];
+                    const url = values[1];
+                    const email = values[2];
+                    
+                    if (code && url) {
+                        let clientId = null;
+                        if (email) {
+                            const client = clients.find(c => c.email === email);
+                            if (client) {
+                                clientId = client.id;
+                            }
+                        }
+                        
+                        const newProduct = {
+                            id: Math.max(...products.map(p => p.id)) + 1,
+                            code: code,
+                            url: url,
+                            defaultUrl: url,
+                            clientId: clientId,
+                            status: 'active',
+                            created: new Date().toISOString()
+                        };
+                        
+                        products.push(newProduct);
+                        importCount++;
+                    }
+                }
+                
+                updateData();
+                updateProductsTable();
+                closeModal('importModal');
+                showNotification(`${importCount} productos importados correctamente`, 'success');
+            };
+            reader.readAsText(file);
+        }
+        
+        function downloadTemplate() {
+            const csvContent = 'codigo,url_defecto,email_cliente\nH8G7D,https://growtap.es/default,cliente@demo.com\nZ3L1P,https://growtap.es/default,\nW9E6Q,https://growtap.es/default,cliente@demo.com';
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'plantilla_productos.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+        
+        // Filter functions
+        function filterClients() {
+            updateClientsTable();
+        }
+        
+        function filterProducts() {
+            updateProductsTable();
+        }
+        
+        // Redirect handler
+        function handleRedirect(code) {
+            const product = products.find(p => p.code === code);
+            
+            if (product && product.status === 'active') {
+                // Add scan record
+                scans.push({
+                    id: scans.length + 1,
+                    productId: product.id,
+                    date: new Date().toISOString(),
+                    hour: new Date().getHours()
+                });
+                
+                // Show redirect page briefly
+                document.getElementById('redirectPage').classList.remove('hidden');
+                document.getElementById('loginSection').style.display = 'none';
+                
+                // Redirect after 2 seconds
+                setTimeout(() => {
+                    window.location.href = product.url;
+                }, 2000);
+            } else {
+                // Show error page
+                document.getElementById('errorPage').classList.remove('hidden');
+                document.getElementById('loginSection').style.display = 'none';
+            }
+        }
+        
+        // Utility functions
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 4000);
+        }
+        
+        function handleLogout() {
+            currentUser = null;
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('loginSection').style.display = 'flex';
+            document.getElementById('loginForm').reset();
+            
+            // Clear charts
+            Object.values(charts).forEach(chart => {
+                if (chart) chart.destroy();
+            });
+            charts = {};
+        }
+        
+        // Initialize chart update listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Analytics filters
+            document.getElementById('myAnalyticsTimeFilter').addEventListener('change', updateClientAnalytics);
+            document.getElementById('myAnalyticsProductFilter').addEventListener('change', updateClientAnalytics);
+            
+            // Client product filters
+            document.getElementById('myProductSearch').addEventListener('input', updateClientProducts);
+            document.getElementById('myProductStatusFilter').addEventListener('change', updateClientProducts);
+        });
+    </script>
+</body>
+</html>
