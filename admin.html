@@ -1,67 +1,15 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GrowTap - Plataforma de Gestión NFC</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-   
 </head>
-<body class="bg-gray-50 font-sans">
-    <!-- Notification Container -->
-    <div id="notification" class="notification"></div>
-    
-    <!-- Login Section -->
-    <div id="loginSection" class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div class="max-w-md w-full space-y-8">
-            <div class="text-center">
-                <div class="mx-auto h-16 w-16 bg-indigo-600 rounded-full flex items-center justify-center">
-                    <i class="fas fa-qrcode text-white text-2xl"></i>
-                </div>
-                <h2 class="mt-6 text-3xl font-extrabold text-gray-900">GrowTap NFC</h2>
-                <p class="mt-2 text-sm text-gray-600">Plataforma de Gestión de Placas NFC</p>
-            </div>
-            
-            <form id="loginForm" class="mt-8 space-y-6">
-                <div class="rounded-md shadow-sm -space-y-px">
-                    <div>
-                        <label for="email" class="sr-only">Email</label>
-                        <input id="email" name="email" type="email" required 
-                               class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" 
-                               placeholder="Email">
-                    </div>
-                    <div>
-                        <label for="password" class="sr-only">Password</label>
-                        <input id="password" name="password" type="password" required 
-                               class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" 
-                               placeholder="Contraseña">
-                    </div>
-                </div>
-                
-                <div>
-                    <button type="submit" 
-                            class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        <span id="loginSpinner" class="loading mr-2" style="display: none;"></span>
-                        Iniciar Sesión
-                    </button>
-                </div>
-                
-                <div class="text-center">
-                    <p class="text-sm text-gray-600">Usuarios de prueba:</p>
-                    <div class="mt-2 space-y-1">
-                        <p class="text-xs text-gray-500">Admin: admin@growtap.es / admin123</p>
-                        <p class="text-xs text-gray-500">Cliente: cliente@demo.com / cliente123</p>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-    
-    <!-- Main Application -->
-    <div id="mainApp" class="hidden">
+<body>
+     <div id="mainApp" class="">
         <!-- Mobile Menu Button -->
         <div class="md:hidden bg-white shadow-sm p-4">
             <button id="mobileMenuBtn" class="text-gray-600 hover:text-gray-900">
@@ -529,9 +477,6 @@
             </div>
         </div>
     </div>
-    
-    <!-- Modals -->
-    <!-- Client Modal -->
     <div id="clientModal" class="modal">
         <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
             <div class="flex justify-between items-center p-6 border-b">
@@ -583,190 +528,27 @@
             </form>
         </div>
     </div>
-    
-    <!-- Product Modal -->
-    <div id="productModal" class="modal">
-        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
-            <div class="flex justify-between items-center p-6 border-b">
-                <h3 id="productModalTitle" class="text-lg font-semibold">Nuevo Producto</h3>
-                <button class="text-gray-400 hover:text-gray-600" onclick="closeModal('productModal')">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <form id="productForm" class="p-6">
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Código (5 caracteres)</label>
-                        <input type="text" id="productCode" required maxlength="5" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-4">Escaneos por Día</h3>
+                        <div class="chart-container">
+                            <canvas id="scansChart"></canvas>
+                        </div>
                     </div>
                     
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">URL por Defecto</label>
-                        <input type="url" id="productUrl" required 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-4">Top Clientes</h3>
+                        <div class="space-y-3" id="topClients"></div>
                     </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Cliente</label>
-                        <select id="productClient" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="">Sin asignar</option>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Estado</label>
-                        <select id="productStatus" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="active">Activo</option>
-                            <option value="inactive">Inactivo</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="flex justify-end space-x-3 mt-6">
-                    <button type="button" onclick="closeModal('productModal')" 
-                            class="px-4 py-2 text-gray-600 hover:text-gray-800">
-                        Cancelar
-                    </button>
-                    <button type="submit" 
-                            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
-                        Guardar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-    
-    <!-- Edit URL Modal -->
-    <div id="editUrlModal" class="modal">
-        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
-            <div class="flex justify-between items-center p-6 border-b">
-                <h3 class="text-lg font-semibold">Editar URL</h3>
-                <button class="text-gray-400 hover:text-gray-600" onclick="closeModal('editUrlModal')">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <form id="editUrlForm" class="p-6">
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Código</label>
-                        <input type="text" id="editUrlCode" readonly 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Nueva URL</label>
-                        <input type="url" id="editUrlValue" required 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                    
-                    <div class="text-sm text-gray-600">
-                        <p>La URL pública será: <strong>https://app.growtap.es/qr/<span id="editUrlPreview"></span></strong></p>
-                    </div>
-                </div>
-                
-                <div class="flex justify-end space-x-3 mt-6">
-                    <button type="button" onclick="closeModal('editUrlModal')" 
-                            class="px-4 py-2 text-gray-600 hover:text-gray-800">
-                        Cancelar
-                    </button>
-                    <button type="submit" 
-                            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
-                        Guardar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-    
-    <!-- Import CSV Modal -->
-    <div id="importModal" class="modal">
-        <div class="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4">
-            <div class="flex justify-between items-center p-6 border-b">
-                <h3 class="text-lg font-semibold">Importar Productos CSV</h3>
-                <button class="text-gray-400 hover:text-gray-600" onclick="closeModal('importModal')">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <div class="p-6">
-                <div class="mb-4">
-                    <p class="text-sm text-gray-600 mb-2">Formato esperado del CSV:</p>
-                    <div class="bg-gray-50 p-3 rounded-md text-sm font-mono">
-                        codigo,url_defecto,email_cliente<br>
-                        H8G7D,https://growtap.es/default,cliente@demo.com<br>
-                        Z3L1P,https://growtap.es/default,
-                    </div>
-                </div>
-                
-                <div class="mb-4">
-                    <button id="downloadTemplate" class="text-indigo-600 hover:text-indigo-800 text-sm">
-                        <i class="fas fa-download mr-1"></i>
-                        Descargar plantilla CSV
-                    </button>
-                </div>
-                
-                <div class="file-upload" id="fileUpload">
-                    <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
-                    <p class="text-gray-600 mb-2">Arrastra tu archivo CSV aquí o haz clic para seleccionar</p>
-                    <input type="file" id="csvFile" accept=".csv" class="hidden">
-                    <button type="button" onclick="document.getElementById('csvFile').click()" 
-                            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
-                        Seleccionar Archivo
-                    </button>
-                </div>
-                
-                <div id="importPreview" class="mt-4 hidden">
-                    <h4 class="font-semibold mb-2">Vista previa:</h4>
-                    <div class="max-h-40 overflow-y-auto border border-gray-200 rounded-md p-2 bg-gray-50">
-                        <pre id="importPreviewContent" class="text-xs"></pre>
-                    </div>
-                </div>
-                
-                <div class="flex justify-end space-x-3 mt-6">
-                    <button type="button" onclick="closeModal('importModal')" 
-                            class="px-4 py-2 text-gray-600 hover:text-gray-800">
-                        Cancelar
-                    </button>
-                    <button id="importBtn" disabled
-                            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50">
-                        Importar
-                    </button>
                 </div>
             </div>
-        </div>
-    </div>
-    
-    <!-- Redirect Page -->
-    <div id="redirectPage" class="hidden min-h-screen flex items-center justify-center bg-gray-50">
-        <div class="text-center">
-            <div class="loading mx-auto mb-4"></div>
-            <h2 class="text-2xl font-bold text-gray-900 mb-2">Redirigiendo...</h2>
-            <p class="text-gray-600">Serás redirigido en un momento</p>
-        </div>
-    </div>
-    
-    <!-- Error Page -->
-    <div id="errorPage" class="hidden min-h-screen flex items-center justify-center bg-gray-50">
-        <div class="text-center">
-            <div class="mx-auto h-24 w-24 bg-red-100 rounded-full flex items-center justify-center mb-4">
-                <i class="fas fa-exclamation-triangle text-red-600 text-3xl"></i>
-            </div>
-            <h2 class="text-2xl font-bold text-gray-900 mb-2">Placa no encontrada</h2>
-            <p class="text-gray-600 mb-4">El código escaneado no existe o ha sido desactivado</p>
-            <button onclick="window.location.href='https://growtap.es'" 
-                    class="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
-                Ir a GrowTap
-            </button>
-        </div>
-    </div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-auth.js"></script>
-    <script src="firebaseAuthFilter.js"></script>
-    <script src="index.js"></script>
-   
+            
+            
+    <script>
+        document.querySelector('#logoutBtn').addEventListener('click', () => {
+            window.location.href = 'http://127.0.0.1:5500/login.html'
+        })
+    </script>
 </body>
 </html>
