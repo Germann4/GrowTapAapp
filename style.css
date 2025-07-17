@@ -245,4 +245,7 @@
         .file-upload.dragover {
             border-color: #4f46e5;
             background-color: #eef2ff;
+        } 
+        a {
+            cursor: pointer;
         }
