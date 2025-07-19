@@ -54,44 +54,26 @@ export function createStatsChart(ctx) {
 }
 /* Crea una rosquita 30% verde y 70% violeta con más grosor */
 export function createClientDistributionChart(ctx, hourlyData) {
-  const labels = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0') + ':00');
-  
-  return new Chart(ctx, {
-    type: 'bar',
+   return new Chart(ctx, {
+    type: 'doughnut',
     data: {
-      labels: labels,
+      labels: ['Panadería Navarro', 'Restaurante El Buen Sabor'],
       datasets: [{
-        label: 'Escaneos por Hora',
-        data: hourlyData,
-        backgroundColor: '#10b981', // verde
-        borderColor: '#059669',
-        borderWidth: 1
+        data: [40, 60],
+        backgroundColor: ['#4CAF50', '#5b06f0ff'], // verde y violeta
+        borderWidth: 0,
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      cutout: '47%', // más grosor (valor más chico = rosquita más gruesa)
       plugins: {
-        legend: { display: false }
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          min: 0,
-          max: 6,
-          ticks: {
-            stepSize: 1,
-            callback: (value) => value
-          }
-        },
-        x: {
-          ticks: {
-            autoSkip: false,
-            maxRotation: 90,
-            minRotation: 45
-          }
+        legend: {
+          display: true,
+          position: 'bottom',
         }
       }
     }
-  });
+  }); 
 }

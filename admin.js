@@ -151,3 +151,25 @@ clientForm.addEventListener('submit', async (e) => {
     alert('Error al guardar cliente: ' + error.message);
   }
 });
+async function obtenerClientes() {
+  try {
+    const res = await fetch('http://localhost:3000/api/clientes'); // Hacemos GET a esta ruta
+    if (!res.ok) {
+      throw new Error('Error al obtener clientes');
+    }
+    const clientes = await res.json(); // Obtenemos el JSON con la lista de clientes
+
+    clientes.forEach(cliente => {
+      console.log(cliente);
+    });
+
+    // Opcional: Mostrar clientes en la página
+
+
+  } catch (error) {
+    alert('Error: ' + error.message);
+  }
+}
+
+// Llamar a la función para cargar los clientes al cargar la página
+window.addEventListener('load', obtenerClientes);
