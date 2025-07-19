@@ -53,25 +53,43 @@ export function createStatsChart(ctx) {
   });
 }
 /* Crea una rosquita 30% verde y 70% violeta con más grosor */
-export function createClientDistributionChart(ctx) {
+export function createClientDistributionChart(ctx, hourlyData) {
+  const labels = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0') + ':00');
+  
   return new Chart(ctx, {
-    type: 'doughnut',
+    type: 'bar',
     data: {
-      labels: ['Clientes verdes', 'Clientes violetas'],
+      labels: labels,
       datasets: [{
-        data: [30, 70],
-        backgroundColor: ['#4CAF50', '#763b8fff'], // verde y violeta
-        borderWidth: 0,
+        label: 'Escaneos por Hora',
+        data: hourlyData,
+        backgroundColor: '#10b981', // verde
+        borderColor: '#059669',
+        borderWidth: 1
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      cutout: '50%', // más grosor (valor más chico = rosquita más gruesa)
       plugins: {
-        legend: {
-          display: true,
-          position: 'bottom',
+        legend: { display: false }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          min: 0,
+          max: 6,
+          ticks: {
+            stepSize: 1,
+            callback: (value) => value
+          }
+        },
+        x: {
+          ticks: {
+            autoSkip: false,
+            maxRotation: 90,
+            minRotation: 45
+          }
         }
       }
     }
