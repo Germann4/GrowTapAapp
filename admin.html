@@ -224,7 +224,7 @@
                 </div>
                 
                 <div class="flex justify-end space-x-3 mt-6">
-                    <button type="button" onclick="closeModal('clientModal')" 
+                    <button type="button" 
                             class="px-4 py-2 text-gray-600 hover:text-gray-800">
                         Cancelar
                     </button>
@@ -280,60 +280,7 @@
                                 </tr>
                             </thead>
                             <tbody id="clientsTableBody" class="bg-white divide-y divide-gray-200">
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center">
-                                    <span class="text-indigo-600 font-medium">P</span>
-                                </div>
-                                <div class="ml-4">
-                                    <div class="text-sm font-medium text-gray-900">Panadería Navarro</div>
-                                    <div class="text-sm text-gray-500">ID: 1</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">cliente@demo.com</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="badge badge-success">Activo</span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button class="BtnEdit text-indigo-600 hover:text-indigo-900 mr-3">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="text-red-600 hover:text-red-900">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center">
-                                    <span class="text-indigo-600 font-medium">R</span>
-                                </div>
-                                <div class="ml-4">
-                                    <div class="text-sm font-medium text-gray-900">Restaurante El Buen Sabor</div>
-                                    <div class="text-sm text-gray-500">ID: 2</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">restaurante@demo.com</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">1</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="badge badge-success">Activo</span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button class="BtnEdit text-indigo-600 hover:text-indigo-900 mr-3">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="text-red-600 hover:text-red-900">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -352,26 +299,21 @@
                 </button>
             </div>
             
-            <form id="clientForm" class="p-6" data-client-id="1">
+            <form id="clientFormEdit" class="p-6" data-client-id="1">
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
-                        <input type="text" id="clientName" required="" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <input type="text" id="clientNameEdit" required="" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     </div>
                     
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                        <input type="email" id="clientEmail" required="" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Contraseña</label>
-                        <input type="password" id="clientPassword" required="" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <input type="email" id="clientEmailEdit" required="" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     </div>
                     
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Estado</label>
-                        <select id="clientStatus" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <select id="clientStatusEdit" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             <option value="active">Activo</option>
                             <option value="inactive">Inactivo</option>
                         </select>
@@ -473,7 +415,7 @@
                                     <option value="active">Activos</option>
                                     <option value="inactive">Inactivos</option>
                                 </select>
-                                <select id="productClientFilter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"><option value="">Todos los clientes</option><option value="1">Panadería Navarro</option><option value="2">Restaurante El Buen Sabor</option></select>
+                                <select id="productClientFilter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"><option value="">Todos los clientes</option></select>
                             </div>
                         </div>
                     </div>
@@ -491,96 +433,17 @@
                                 </tr>
                             </thead>
                             <tbody id="productsTableBody" class="bg-white divide-y divide-gray-200">
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center">
-                                    <i class="fas fa-qrcode text-green-600"></i>
-                                </div>
-                                <div class="ml-4">
-                                    <div class="text-sm font-medium text-gray-900">H8G7D</div>
-                                    <div class="text-sm text-gray-500">ID: 1</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 max-w-xs truncate">https://panaderianavarro.com/resenas</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Panadería Navarro</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">35</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="badge badge-success">Activo</span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button class="Edit-Product-Btn text-indigo-600 hover:text-indigo-900 mr-3">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="text-red-600 hover:text-red-900">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
+              
                 
                     <tr>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center">
-                                    <i class="fas fa-qrcode text-green-600"></i>
-                                </div>
-                                <div class="ml-4">
-                                    <div class="text-sm font-medium text-gray-900">Z3L1P</div>
-                                    <div class="text-sm text-gray-500">ID: 2</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 max-w-xs truncate">https://linktr.ee/panaderianavarro</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Panadería Navarro</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">28</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="badge badge-success">Activo</span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button onclick="editProduct(2)" class="text-indigo-600 hover:text-indigo-900 mr-3">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button onclick="deleteProduct(2)" class="text-red-600 hover:text-red-900">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center">
-                                    <i class="fas fa-qrcode text-green-600"></i>
-                                </div>
-                                <div class="ml-4">
-                                    <div class="text-sm font-medium text-gray-900">W9E6Q</div>
-                                    <div class="text-sm text-gray-500">ID: 3</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 max-w-xs truncate">https://restaurante.com/menu</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Restaurante El Buen Sabor</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">37</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="badge badge-success">Activo</span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button class="text-indigo-600 hover:text-indigo-900 mr-3">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="text-red-600 hover:text-red-900">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
+                   
                 </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-        <!--Editar Modal producto-->
+        <!--Modal Nuevo Producto-->
         
         <div id="productModal" class="modal">
         <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
@@ -605,7 +468,7 @@
                     
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Cliente</label>
-                        <select id="productClient" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"><option value="">Sin asignar</option><option value="1">Panadería Navarro</option><option value="2">Restaurante El Buen Sabor</option></select>
+                        <select id="productClient" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"><option value="">Sin asignar</option></select>
                     </div>
                     
                     <div>
@@ -685,37 +548,37 @@
         </div>
             </div>
 
-        <!--Modal productos Nuevo Producto-->
+        <!--Modal Editar Producto-->
 
-            <div id="productModal" class="modal">
+            <div id="productModalEdit" class="modal">
             <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
             <div class="flex justify-between items-center p-6 border-b">
-                <h3 id="productModalTitle" class="text-lg font-semibold">Nuevo Producto</h3>
+                <h3 id="productModalTitle" class="text-lg font-semibold">Editar Producto</h3>
                 <button class="text-gray-400 hover:text-gray-600 close-new-product-modal">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             
-            <form id="productForm" class="p-6">
+            <form id="productFormEdit" class="p-6">
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Código (5 caracteres)</label>
-                        <input type="text" id="productCode" required="" maxlength="5" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <input type="text" id="productCodeEdit" required="" maxlength="5" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     </div>
                     
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">URL por Defecto</label>
-                        <input type="url" id="productUrl" required="" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <input type="url" id="productUrlEdit" required="" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     </div>
                     
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Cliente</label>
-                        <select id="productClient" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"><option value="">Sin asignar</option><option value="1">Panadería Navarro</option><option value="2">Restaurante El Buen Sabor</option></select>
+                        <select id="productEdit" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"><option value="">Sin asignar</option></select>
                     </div>
                     
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Estado</label>
-                        <select id="productStatus" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <select id="productStatusEdit" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             <option value="active">Activo</option>
                             <option value="inactive">Inactivo</option>
                         </select>
@@ -842,6 +705,6 @@
             </div>
             </div>
     
-        <script type="module" src="admin.js"></script>    
+        <script type="module" src="admin.js" defer></script>    
 </body>
 </html>
