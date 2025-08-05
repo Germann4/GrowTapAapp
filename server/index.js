@@ -34,23 +34,38 @@ app.post('/api/clientes', async (req, res) => {
     const tempPassword = generarPasswordTemp();
 
     try {
+      // Intentar obtener usuario existente
       userRecord = await admin.auth().getUserByEmail(email);
+
+      // Si existe, actualizar solo el campo requiereCambioPassword en Firestore
+      await db.collection('usuarios').doc(userRecord.uid).set({
+       nombre,
+       PrimeraLetraDelNombre,
+       email,
+       estado,
+       perfil: 'cliente',
+       creadoEn: admin.firestore.FieldValue.serverTimestamp(),
+       requiereCambioPassword: true
+}, { merge: true });
+
     } catch (error) {
       if (error.code === 'auth/user-not-found') {
+        // Si no existe, crear usuario nuevo
         userRecord = await admin.auth().createUser({
           email,
           password: tempPassword,
           disabled: estado.toLowerCase() !== 'activo'
         });
 
-        //Guardar datos del usuario en Firestore
+        // Guardar datos completos en Firestore
         await db.collection('usuarios').doc(userRecord.uid).set({
           nombre,
           PrimeraLetraDelNombre,
           email,
           estado,
           perfil: 'cliente',
-          creadoEn: admin.firestore.FieldValue.serverTimestamp()
+          creadoEn: admin.firestore.FieldValue.serverTimestamp(),
+          requiereCambioPassword: true
         });
       } else {
         throw error;
@@ -60,7 +75,7 @@ app.post('/api/clientes', async (req, res) => {
     // Enviar email con Brevo
     await axios.post('https://api.brevo.com/v3/smtp/email', {
       sender: {
-        name: "Tu Empresa",
+        name: "GrowTap",
         email: process.env.BREVO_SENDER_EMAIL
       },
       to: [{ email }],
@@ -84,6 +99,7 @@ app.post('/api/clientes', async (req, res) => {
     res.status(500).json({ error: 'Error al crear usuario o enviar correo' });
   }
 });
+
 // Eliminar Usuarios desde el Administrador
 app.post('/api/eliminar-usuario', async (req, res) => {
   const { uid } = req.body;
@@ -205,6 +221,28 @@ app.post('/api/eliminar-productos', async (req, res) => {
     console.error('Error al eliminar el producto:', error);
     res.status(500).json({ error: 'Error al eliminar el producto' });
   }  
+});
+app.post('/api/clientEditar-productos', async (req, res) => {
+  try {
+    const { productoId, codigo, url } = req.body;
+    console.log(productoId)  
+    if (!productoId || !codigo || !url) {
+      return res.status(400).send('Faltan datos obligatorios');
+    }
+  
+    const ClienteproductoRef = db.collection('productos').doc(productoId);
+
+    await ClienteproductoRef.update({
+      codigo,
+      url,
+      modificadoEn: new Date()
+    });
+
+    res.status(200).send('Producto actualizado correctamente');
+  } catch (error) {
+    console.error('Error actualizando producto:', error);
+    res.status(500).send('Error interno del servidor');
+  }
 });
 
 

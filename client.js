@@ -51,7 +51,6 @@ document.querySelector('.copy-url-button').addEventListener('click', () => {
 });
 */
 
-const tbody = document.getElementById("myProductsTableBody");
 
 // Función para cargar productos de Firestore filtrando por usuario (email)
 
@@ -64,7 +63,7 @@ onAuthStateChanged(auth, (user) => {
   } else {
     console.log("Usuario logueado:", user.email);
     // Cargar los productos del usuario logueado
-    loadUserProducts(user.email);
+    listarProductos();
   }
 });
 
@@ -77,7 +76,8 @@ document.querySelector('#logoutBtn').addEventListener('click', () => {
 /**
  * Lista y muestra en la tabla los productos del usuario autenticado,
  * obteniéndolos desde Firestore y filtrando por su clienteId.
- */
+*/
+const tbody = document.getElementById("myProductsTableBody");
 async function listarProductos() {
   try {
     const productosCol = collection(db, "productos");
@@ -88,7 +88,8 @@ async function listarProductos() {
       ...doc.data()
     }));
     const userId = auth.currentUser?.uid;
-
+    console.log(userId,productos)
+   
     
     // Filtrar productos del usuario actual
     const productosDelUsuario = productos.filter(producto => producto.clienteId === userId);
@@ -114,22 +115,21 @@ async function listarProductos() {
    } else {
     console.warn("El documento del usuario no existe en Firestore");
 }
+ 
+let ejecutado = false;
+document.getElementById('userNombre').innerHTML =  `<p>${productos[0].clienteNombre}</p>`
+  
+  console.log(document.getElementById('productSummary'))  
+  // Limpiar
+  tbody.innerHTML = '';
+  document.getElementById('myTopProducts').innerHTML = '';
+  document.getElementById('productSummary').innerHTML = '';
 
-    tbody.innerHTML = ""; // limpio la tabla
-
-    productosDelUsuario.forEach(producto => {
-      document.getElementById('UserContainer').innerHTML += `<p>${producto.clienteNombre}</p>`
-      document.getElementById('userEmail').classList.add('hidden')
-      
-      // Ocultar loader
-      document.querySelector('.Loader').classList.add('hidden');
-      document.querySelector('.LoaderproductSummary').classList.add('hidden');
-
-      const option = document.createElement('option');
-      option.textContent = `${producto.codigo}`;
-      document.getElementById('myAnalyticsProductFilter').appendChild(option);
-      
-      tbody.innerHTML += `
+    for (const producto of productos) {
+      console.log(producto)
+       document.getElementById('userEmail').classList.add('hidden');
+        // Muestra Productos al Cliente
+       tbody.innerHTML += `
                     <tr>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
@@ -143,21 +143,22 @@ async function listarProductos() {
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 max-w-xs truncate">${producto.url}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">30</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">0</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="badge badge-success">Activo</span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <button class="text-indigo-600 hover:text-indigo-900 mr-3">
-                                <i class="fas fa-edit"></i> Editar URL
+                                <i class="fas fa-edit" data-codigo='${producto.codigo}' data-url='${producto.url}' data-id='${producto.id}'></i> Editar URL
                             </button>
-                            <button class="copy-url-button text-green-600 hover:text-green-900">
+                            <button class="copy-url-button text-green-600 hover:text-green-900" data-url='https://app.growtap.es/qr/${producto.codigo}' id="copy-url-button">
                                 <i class="fas fa-copy"></i> Copiar
                             </button>
                         </td>
                     </tr>
       `;
-      document.getElementById('myTopProducts').innerHTML += `
+       // Muestra Mis Productos Más Populares
+       document.getElementById('myTopProducts').innerHTML += `
       <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div>
                         <p class="font-medium">${producto.codigo}</p>
@@ -169,7 +170,8 @@ async function listarProductos() {
                     </div>
                 </div>
       `
-      document.getElementById('productSummary').innerHTML += `
+      // Muestra Resumen por Producto
+       document.getElementById('productSummary').innerHTML += `
       <div class="border border-gray-200 rounded-lg p-4">
                     <div class="flex justify-between items-start mb-2">
                         <div>
@@ -192,9 +194,8 @@ async function listarProductos() {
                     </div>
                 </div>
       `
-    });
-
-
+    }
+    
     if(productos.length === 0) {
       tbody.innerHTML = '<tr><td colspan="5">No se encontraron productos.</td></tr>';
     }
@@ -202,6 +203,62 @@ async function listarProductos() {
     console.error("Error cargando productos:", error);
   }
 }
+// Cliente Presiona Boton Editar o Copiar
+document.addEventListener('click', e => {
+   if(e.target.className === 'fas fa-edit') {
+     document.getElementById('editUrlModal').classList.add('active'); 
+     console.log(e.target.getAttribute('data-id'))
+     document.getElementById('editUrlCode').value = e.target.getAttribute('data-codigo');
+     document.getElementById('editUrlValue').value = e.target.getAttribute('data-url');
+     document.getElementById('editUrlForm').setAttribute('data-clienteProducto-id',e.target.getAttribute('data-id'));
+    }
+   if(e.target.className === 'fas fa-times') {
+     document.getElementById('editUrlModal').classList.remove('active'); 
+   }
+  if(e.target.id === 'copy-url-button') {
+    console.log(e.target.getAttribute('data-url'));
+    document.querySelector('#notification').classList.add('show');
+    navigator.clipboard.writeText(e.target.getAttribute('data-url'))
+    setTimeout(() => {
+      document.querySelector('#notification').classList.remove('show');
+    },2000);
+  }
+   
+});
+// Cliente Edita Productos
+document.getElementById('editUrlForm').addEventListener('submit', async (e) => {
+     e.preventDefault();
+     console.log(e.target.getAttribute('data-clienteProducto-id'))
+     const productoId = e.target.getAttribute('data-clienteProducto-id');
+     const codigo = document.getElementById('editUrlCode').value.trim();
+     const url = document.getElementById('editUrlValue').value.trim();
 
+      try {
+    const res = await fetch('http://localhost:3000/api/clientEditar-productos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        productoId,
+        codigo,
+        url,
+      })
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`Error ${res.status}: ${errorText}`);
+    }
+
+    alert('Producto actualizado correctamente.');
+
+    await listarProductos();
+    // Acá podrías cerrar modal, refrescar lista, etc.
+
+  } catch (error) {
+    console.error('Error al actualizar producto:', error);
+    alert('Ocurrió un error. Revisá la consola.');
+  }
+ 
+})
 // Solo llamala así para hacer la lectura rápida y mostrar
 listarProductos();

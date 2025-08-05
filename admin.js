@@ -392,7 +392,7 @@ if (productBtn) {
 
   document.getElementById('productStatusEdit').value = productoAEditar.estado || 'active';
 
-  // 👇 Setear el ID en el formulario de edición
+  // Setear el ID en el formulario de edición
   document.getElementById('productFormEdit').setAttribute('data-product-id', productoId);
 
   document.getElementById('productModalEdit').classList.add('active');
@@ -486,13 +486,13 @@ document.getElementById('productFormEdit').addEventListener('submit', async (e) 
 document.addEventListener('click', async (e) => {
   const target = e.target;
 
-  // 🗑️ Eliminar producto
+  // Eliminar producto
   const trashBtn = target.closest('.trashEditProduct');
   if (trashBtn) {
     const id = trashBtn.getAttribute('data-id');
     if (!id) return;
     
-    // ⚠️ Confirmación antes de eliminar
+    // Confirmación antes de eliminar
     alert('¿Estás seguro de que querés eliminar este producto?');
     
     try {
@@ -514,10 +514,10 @@ document.addEventListener('click', async (e) => {
       console.error('Error al eliminar el producto:', error);
     }
 
-    return; // ✅ No seguir evaluando otros clics
+    return; // No seguir evaluando otros clics
   }
 
-  // ✏️ Editar producto
+  // Editar producto
   const editBtn = target.closest('.EditProduct');
   if (editBtn) {
     const id = editBtn.getAttribute('data-id');
@@ -525,10 +525,10 @@ document.addEventListener('click', async (e) => {
     return;
   }
 
-  // 👤 Eliminar usuario
+  // Eliminar usuario
   const userDeleteBtn = target.closest('button.text-red-600');
   if (userDeleteBtn) {
-    // ❌ Evitar conflicto si es el botón de eliminar producto
+    // Evitar conflicto si es el botón de eliminar producto
     if (target.closest('.trashEditProduct')) return;
 
     const uid = userDeleteBtn.getAttribute('data-id');
