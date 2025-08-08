@@ -117,7 +117,6 @@ async function listarProductos() {
 }
  
 let ejecutado = false;
-document.getElementById('userNombre').innerHTML =  `<p>${productos[0].clienteNombre}</p>`
   
   console.log(document.getElementById('productSummary'))  
   // Limpiar
@@ -126,6 +125,8 @@ document.getElementById('userNombre').innerHTML =  `<p>${productos[0].clienteNom
   document.getElementById('productSummary').innerHTML = '';
 
     for (const producto of productos) {
+      // Agrega nombre del cliente
+      document.getElementById('userNombre').innerHTML = `<p>${producto.clienteNombre}</p>`
       console.log(producto)
        document.getElementById('userEmail').classList.add('hidden');
         // Muestra Productos al Cliente
