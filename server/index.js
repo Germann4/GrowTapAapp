@@ -1,9 +1,11 @@
-import express from 'express';
-import cors from 'cors';
-import admin from 'firebase-admin';
-import axios from 'axios';
-import dotenv from 'dotenv';
-import serviceAccount from './clave-privada.json' assert { type: 'json' };
+const express = require('express');
+const cors = require('cors');
+const admin = require('firebase-admin');
+const axios = require('axios');
+const dotenv = require('dotenv');
+
+// Esta es la línea que debes corregir para que funcione.
+const serviceAccount = require('./clave-privada.json');
 
 dotenv.config();
 const app = express();
