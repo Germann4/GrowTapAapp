@@ -7,6 +7,12 @@ const dotenv = require('dotenv');
 // Esta es la línea que debes corregir para que funcione.
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
 
+
+// Lista de orígenes permitidos
+const allowedOrigins = [
+  'http://127.0.0.1:5500', // Tu frontend local
+];
+
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,7 +22,17 @@ admin.initializeApp({
 });
 
 const db = admin.firestore();
-app.use(cors());
+// Configuración de CORS
+app.use(cors({
+  origin: function(origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'El origen de la petición no está permitido por CORS.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  }
+}));
 app.use(express.json());
 
 function generarPasswordTemp() {
