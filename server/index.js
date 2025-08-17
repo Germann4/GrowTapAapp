@@ -5,7 +5,7 @@ const axios = require('axios');
 const dotenv = require('dotenv');
 
 // Esta es la línea que debes corregir para que funcione.
-const serviceAccount = require('./clave-privada.json');
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
 
 dotenv.config();
 const app = express();
