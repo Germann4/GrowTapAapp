@@ -235,7 +235,7 @@ document.getElementById('editUrlForm').addEventListener('submit', async (e) => {
      const url = document.getElementById('editUrlValue').value.trim();
 
       try {
-    const res = await fetch('http://localhost:3000/api/clientEditar-productos', {
+    const res = await fetch('https://growtapaapp-6.onrender.com/api/clientEditar-productos', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

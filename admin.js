@@ -124,7 +124,7 @@ form.addEventListener('submit', async (e) => {
 
   try {
     // Enviar datos al backend (tu servidor express)
-    const res = await fetch('http://localhost:3000/api/clientes', {
+    const res = await fetch('https://growtapaapp-6.onrender.com/api/clientes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nombre, email, estado })
@@ -309,7 +309,7 @@ formProduc.addEventListener('submit', async (e) => {
   const productUrl = document.getElementById('productUrl').value.trim();
 
   try {
-    const res = await fetch('http://localhost:3000/api/productos', {
+    const res = await fetch('https://growtapaapp-6.onrender.com/api/productos', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -416,7 +416,7 @@ document.getElementById('clientFormEdit').addEventListener('submit', async (e) =
   }
 
   try {
-    const res = await fetch('http://localhost:3000/api/editar-usuario', {
+    const res = await fetch('https://growtapaapp-6.onrender.com/api/editar-usuario', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId, nombre, email, estado })
@@ -456,7 +456,7 @@ document.getElementById('productFormEdit').addEventListener('submit', async (e) 
   // por ejemplo, la pasás desde un dataset o una variable global
 
   try {
-    const res = await fetch('http://localhost:3000/api/editar-productos', {
+    const res = await fetch('https://growtapaapp-6.onrender.com/api/editar-productos', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -495,7 +495,7 @@ document.addEventListener('click', async (e) => {
     alert('¿Estás seguro de que querés eliminar este producto?');
     
     try {
-      const res = await fetch('http://localhost:3000/api/eliminar-productos', {
+      const res = await fetch('https://growtapaapp-6.onrender.com/api/eliminar-productos', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -534,7 +534,7 @@ document.addEventListener('click', async (e) => {
     if (!confirm('¿Estás seguro de que querés eliminar este usuario?')) return;
 
     try {
-      const res = await fetch('http://localhost:3000/api/eliminar-usuario', {
+      const res = await fetch('https://growtapaapp-6.onrender.com/api/eliminar-usuario', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ uid }),
